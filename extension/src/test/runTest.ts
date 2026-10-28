@@ -15,7 +15,15 @@ async function main(): Promise<void> {
     version: process.env.VSCODE_TEST_VERSION || 'stable',
     extensionDevelopmentPath,
     extensionTestsPath,
-    launchArgs: [workspace, '--disable-extensions', '--disable-workspace-trust', '--skip-welcome', '--skip-release-notes'],
+    launchArgs: [
+      workspace,
+      '--disable-extensions',
+      '--disable-workspace-trust',
+      '--skip-welcome',
+      '--skip-release-notes',
+      // Headless CI runners (xvfb, no GPU, restricted user namespaces) hang the renderer without these.
+      ...(process.env.CI ? ['--disable-gpu', '--no-sandbox'] : []),
+    ],
   });
 }
 
