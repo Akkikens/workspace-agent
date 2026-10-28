@@ -1,0 +1,107 @@
+{
+  "name": "workspace-agent-vscode",
+  "displayName": "Workspace Agent",
+  "description": "Local code search (BM25, optional Ollama hybrid) and grounded Q&A against the Workspace Agent backend.",
+  "version": "0.1.0",
+  "publisher": "akkikens",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "workspaceAgent.indexWorkspace",
+        "title": "Index Workspace",
+        "category": "Workspace Agent"
+      },
+      {
+        "command": "workspaceAgent.searchCodebase",
+        "title": "Search Codebase",
+        "category": "Workspace Agent"
+      },
+      {
+        "command": "workspaceAgent.openChat",
+        "title": "Open Chat",
+        "category": "Workspace Agent"
+      }
+    ],
+    "configuration": {
+      "title": "Workspace Agent",
+      "properties": {
+        "workspaceAgent.backendUrl": {
+          "type": "string",
+          "default": "http://localhost:5080",
+          "description": "Base URL of the Workspace Agent backend (POST /api/code/ask)."
+        },
+        "workspaceAgent.demoUser": {
+          "type": "string",
+          "default": "alice",
+          "enum": [
+            "alice",
+            "bob",
+            "carol"
+          ],
+          "description": "Demo user sent in the X-Demo-User header."
+        },
+        "workspaceAgent.embeddings.provider": {
+          "type": "string",
+          "default": "none",
+          "enum": [
+            "none",
+            "ollama"
+          ],
+          "enumDescriptions": [
+            "BM25 keyword retrieval only.",
+            "Hybrid: BM25 fused with local Ollama embeddings (reciprocal rank fusion)."
+          ],
+          "description": "Embedding provider for hybrid retrieval. Takes effect on the next index."
+        },
+        "workspaceAgent.embeddings.ollamaUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Ollama server URL (POST {url}/api/embed)."
+        },
+        "workspaceAgent.embeddings.model": {
+          "type": "string",
+          "default": "nomic-embed-text",
+          "description": "Ollama embedding model."
+        },
+        "workspaceAgent.maxFiles": {
+          "type": "number",
+          "default": 2000,
+          "minimum": 1,
+          "description": "Maximum number of files to index."
+        },
+        "workspaceAgent.topK": {
+          "type": "number",
+          "default": 8,
+          "minimum": 1,
+          "maximum": 50,
+          "description": "Number of chunks retrieved for search results and chat context."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test:unit": "npm run compile && mocha --reporter spec \"out/test/unit/**/*.test.js\"",
+    "test:integration": "npm run compile && node ./out/test/runTest.js",
+    "test": "npm run test:unit"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.19.0",
+    "@types/vscode": "~1.90.0",
+    "@vscode/test-electron": "^3.1.0",
+    "mocha": "^11.8.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WorkspaceAgent.Anthropic/WorkspaceAgent.Anthropic.csproj" />
+    <Project Path="src/WorkspaceAgent.Api/WorkspaceAgent.Api.csproj" />
+    <Project Path="src/WorkspaceAgent.Cli/WorkspaceAgent.Cli.csproj" />
+    <Project Path="src/WorkspaceAgent.Core/WorkspaceAgent.Core.csproj" />
+    <Project Path="src/WorkspaceAgent.Stubs/WorkspaceAgent.Stubs.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WorkspaceAgent.Tests/WorkspaceAgent.Tests.csproj" />
+  </Folder>
+</Solution>

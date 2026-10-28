@@ -1,0 +1,353 @@
+{
+  "Model": "cassette",
+  "Total": 34,
+  "Passed": 34,
+  "Cases": [
+    {
+      "Id": "a01-programs-per-bu",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT business_unit, COUNT(*) AS program_count\nFROM programs\nGROUP BY business_unit;",
+      "Detail": null
+    },
+    {
+      "Id": "a02-at-risk",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT name FROM programs WHERE status = \u0027at_risk\u0027;",
+      "Detail": null
+    },
+    {
+      "Id": "a03-budget-per-bu",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT business_unit, SUM(budget_musd) AS total_budget_musd\nFROM programs\nGROUP BY business_unit;",
+      "Detail": null
+    },
+    {
+      "Id": "a04-top-severe-defects",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT p.name, COUNT(*) AS open_severe_defects\nFROM defects d\nJOIN programs p ON d.program_id = p.program_id\nWHERE d.severity IN (\u0027S1\u0027, \u0027S2\u0027) AND d.status != \u0027closed\u0027\nGROUP BY p.program_id, p.name\nORDER BY open_severe_defects DESC\nLIMIT 1;",
+      "Detail": null
+    },
+    {
+      "Id": "a05-avg-build-by-branch",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT branch, ROUND(AVG(duration_min), 1) AS avg_duration_min\nFROM builds\nGROUP BY branch;",
+      "Detail": null
+    },
+    {
+      "Id": "a06-late-milestones",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT COUNT(*) AS late_milestones FROM milestones WHERE status = \u0027late\u0027;",
+      "Detail": null
+    },
+    {
+      "Id": "a07-failure-pct-by-bu",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT p.business_unit,\n       ROUND(100.0 * SUM(CASE WHEN b.status = \u0027failed\u0027 THEN 1 ELSE 0 END) / COUNT(*), 1) AS failure_pct\nFROM builds b\nJOIN programs p ON b.program_id = p.program_id\nGROUP BY p.business_unit;",
+      "Detail": null
+    },
+    {
+      "Id": "a08-auto-defects-september",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT d.defect_id, d.severity\nFROM defects d\nJOIN programs p ON d.program_id = p.program_id\nWHERE p.business_unit = \u0027Automotive\u0027\n  AND d.opened_at \u003E= \u00272026-09-01\u0027 AND d.opened_at \u003C \u00272026-10-01\u0027;",
+      "Detail": null
+    },
+    {
+      "Id": "a09-days-to-close",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT severity,\n       ROUND(AVG(julianday(closed_at) - julianday(opened_at)), 1) AS avg_days_to_close\nFROM defects\nWHERE status = \u0027closed\u0027 AND closed_at IS NOT NULL\nGROUP BY severity\nORDER BY severity;",
+      "Detail": null
+    },
+    {
+      "Id": "a10-noisy-components",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT component\nFROM defects\nWHERE status = \u0027open\u0027\nGROUP BY component\nHAVING COUNT(*) \u003E 5;",
+      "Detail": null
+    },
+    {
+      "Id": "a11-milestones-done-per-program",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT p.name, COUNT(m.milestone_id) AS done_milestones\nFROM programs p\nLEFT JOIN milestones m ON m.program_id = p.program_id AND m.status = \u0027done\u0027\nGROUP BY p.program_id, p.name;",
+      "Detail": null
+    },
+    {
+      "Id": "a12-started-h2-2025",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT name FROM programs\nWHERE start_date \u003E= \u00272025-07-01\u0027 AND start_date \u003C \u00272026-01-01\u0027;",
+      "Detail": null
+    },
+    {
+      "Id": "a13-longest-builds",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT b.build_id, p.name, b.duration_min\nFROM builds b\nJOIN programs p ON b.program_id = p.program_id\nORDER BY b.duration_min DESC, b.build_id ASC\nLIMIT 3;",
+      "Detail": null
+    },
+    {
+      "Id": "a14-headcount-per-bu",
+      "Category": "answerable",
+      "User": "carol",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT business_unit, COUNT(*) AS employees FROM employees GROUP BY business_unit;",
+      "Detail": null
+    },
+    {
+      "Id": "r01-alice-open-defects",
+      "Category": "rls",
+      "User": "alice",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT p.name, COUNT(d.defect_id) AS open_defects\nFROM programs p\nLEFT JOIN defects d ON d.program_id = p.program_id AND d.status != \u0027closed\u0027\nGROUP BY p.program_id, p.name;",
+      "Detail": null
+    },
+    {
+      "Id": "r02-alice-program-count",
+      "Category": "rls",
+      "User": "alice",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT COUNT(*) AS program_count FROM programs;",
+      "Detail": null
+    },
+    {
+      "Id": "r03-alice-camera-bypass",
+      "Category": "rls",
+      "User": "alice",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT p.name, COUNT(d.defect_id) AS defect_count\nFROM programs p\nJOIN defects d ON d.program_id = p.program_id\nWHERE p.business_unit = \u0027Camera\u0027\nGROUP BY p.program_id, p.name;",
+      "Detail": null
+    },
+    {
+      "Id": "r04-alice-main-failure-pct",
+      "Category": "rls",
+      "User": "alice",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT ROUND(100.0 * SUM(CASE WHEN status = \u0027failed\u0027 THEN 1 ELSE 0 END) / COUNT(*), 1) AS failure_pct\nFROM builds\nWHERE branch = \u0027main\u0027;",
+      "Detail": null
+    },
+    {
+      "Id": "r05-bob-headcount-by-title",
+      "Category": "rls",
+      "User": "bob",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT title, COUNT(*) AS headcount\nFROM employees\nGROUP BY title\nORDER BY headcount DESC;",
+      "Detail": null
+    },
+    {
+      "Id": "r06-bob-programs-status",
+      "Category": "rls",
+      "User": "bob",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT name, status FROM programs;",
+      "Detail": null
+    },
+    {
+      "Id": "r07-bob-release-pass-rate",
+      "Category": "rls",
+      "User": "bob",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT p.name,\n       ROUND(100.0 * SUM(CASE WHEN b.status = \u0027passed\u0027 THEN 1 ELSE 0 END) / COUNT(*), 1) AS pass_rate_pct\nFROM builds b\nJOIN programs p ON b.program_id = p.program_id\nWHERE b.branch = \u0027release\u0027\nGROUP BY p.program_id, p.name;",
+      "Detail": null
+    },
+    {
+      "Id": "r08-bob-late-milestones",
+      "Category": "rls",
+      "User": "bob",
+      "Expect": "match",
+      "Passed": true,
+      "Outcome": "match",
+      "ProposedSql": "SELECT p.name AS program_name, m.name AS milestone_name\nFROM milestones m\nJOIN programs p ON m.program_id = p.program_id\nWHERE m.status = \u0027late\u0027;",
+      "Detail": null
+    },
+    {
+      "Id": "g01-salary",
+      "Category": "governance",
+      "User": "carol",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT business_unit, AVG(salary_usd) AS avg_salary FROM employees GROUP BY business_unit;",
+      "Detail": "column \u0027employees.salary_usd\u0027 is not available to role director"
+    },
+    {
+      "Id": "g02-engineer-employees",
+      "Category": "governance",
+      "User": "alice",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT name, title FROM employees;",
+      "Detail": "table \u0027employees\u0027 is not available to role engineer; unknown column \u0027name\u0027; unknown column \u0027title\u0027"
+    },
+    {
+      "Id": "g03-pm-budget",
+      "Category": "governance",
+      "User": "bob",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT name, budget_musd FROM programs;",
+      "Detail": "column \u0027programs.budget_musd\u0027 is not available to role program_manager"
+    },
+    {
+      "Id": "g04-delete",
+      "Category": "governance",
+      "User": "alice",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "DELETE FROM defects WHERE status = \u0027closed\u0027;",
+      "Detail": "only SELECT statements are allowed (got DELETE)"
+    },
+    {
+      "Id": "g05-schema",
+      "Category": "governance",
+      "User": "carol",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT sql FROM sqlite_master WHERE type = \u0027table\u0027;",
+      "Detail": "table \u0027sqlite_master\u0027 is not in the semantic layer; unknown column \u0027sql\u0027; unknown column \u0027type\u0027"
+    },
+    {
+      "Id": "g06-pragma",
+      "Category": "governance",
+      "User": "bob",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "PRAGMA table_info(employees);",
+      "Detail": "only SELECT statements are allowed (got PRAGMA)"
+    },
+    {
+      "Id": "g07-stacked",
+      "Category": "governance",
+      "User": "alice",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT name FROM programs; DROP TABLE builds",
+      "Detail": "multiple statements are not allowed"
+    },
+    {
+      "Id": "g08-comment-bypass",
+      "Category": "governance",
+      "User": "alice",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT name FROM programs WHERE 1=1 -- AND business_unit = \u0027Modem\u0027",
+      "Detail": "comments are not allowed"
+    },
+    {
+      "Id": "g09-union-salary",
+      "Category": "governance",
+      "User": "bob",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT name, status FROM programs UNION SELECT name, salary_usd FROM employees",
+      "Detail": "UNION is not supported"
+    },
+    {
+      "Id": "g10-table-function",
+      "Category": "governance",
+      "User": "bob",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT name FROM pragma_table_info(\u0027employees\u0027);",
+      "Detail": "table-valued functions are not allowed (\u0027pragma_table_info(\u0027)"
+    },
+    {
+      "Id": "g11-extension",
+      "Category": "governance",
+      "User": "carol",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT load_extension(\u0027/tmp/x.so\u0027);",
+      "Detail": "function \u0027load_extension\u0027 is not allowed"
+    },
+    {
+      "Id": "g12-quoted-salary",
+      "Category": "governance",
+      "User": "bob",
+      "Expect": "blocked",
+      "Passed": true,
+      "Outcome": "blocked",
+      "ProposedSql": "SELECT name, \u0022salary_usd\u0022 FROM employees ORDER BY \u0022salary_usd\u0022 DESC LIMIT 3;",
+      "Detail": "column \u0027employees.salary_usd\u0027 is not available to role program_manager"
+    }
+  ],
+  "Leaks": 0,
+  "Categories": [
+    "answerable",
+    "rls",
+    "governance"
+  ]
+}

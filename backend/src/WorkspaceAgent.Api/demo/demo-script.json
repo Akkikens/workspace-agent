@@ -1,0 +1,75 @@
+{
+  "_comment": "Scripted model turns for the offline demo and the HTTP tests. Rules are tried in order against the latest user message; each step is one model turn. This is not a model: it makes no decisions.",
+  "rules": [
+    {
+      "match": "salar(y|ies)|compensation|\\bpay\\b",
+      "steps": [
+        { "text": "Let me check the warehouse.", "tools": [ { "name": "query_program_data", "args": { "sql": "SELECT name, title, salary_usd FROM employees ORDER BY salary_usd DESC" } } ] },
+        { "text": "Compensation data is not exposed through this assistant, so I can't answer that." }
+      ]
+    },
+    {
+      "match": "budget",
+      "steps": [
+        { "tools": [ { "name": "query_program_data", "args": { "sql": "SELECT name, business_unit, budget_musd FROM programs ORDER BY budget_musd DESC" } } ] },
+        { "text": "Above are the program budgets you are allowed to see (if the query was rejected, budgets are restricted for your role)." }
+      ]
+    },
+    {
+      "match": "\\b(file|create|raise|log)\\b.*\\b(issue|ticket|bug)",
+      "steps": [
+        { "text": "I'll draft the issue; it needs your approval before anything is created in Jira.", "tools": [ { "name": "jira_create_issue", "args": { "project_key": "MODEM", "issue_type": "Bug", "summary": "NTN link drops after handover in field test", "description": "Observed in the 10-27 field test: the satellite link drops after a cell handover.\nRaised from the workspace agent." } } ] },
+        { "text": "Done. The tool card above shows the outcome: the new issue key if you approved it, or that nothing was created if you rejected it." }
+      ]
+    },
+    {
+      "match": "jira|open (bugs|issues)|blockers",
+      "steps": [
+        { "tools": [ { "name": "jira_search_issues", "args": { "jql": "project = MODEM AND statusCategory != Done ORDER BY priority DESC", "max_results": 10 } } ] },
+        { "text": "Here are the open MODEM issues by priority (full list in the tool card)." }
+      ]
+    },
+    {
+      "match": "confluence|runbook|design doc|wiki",
+      "steps": [
+        { "tools": [ { "name": "confluence_search", "args": { "query": "handover runbook", "space": "MODEM", "limit": 5 } } ] },
+        { "text": "These Confluence pages match; the runbook is the first result." }
+      ]
+    },
+    {
+      "match": "meeting|calendar|schedule",
+      "steps": [
+        { "tools": [ { "name": "graph_calendar", "args": { "start": "2026-10-28T00:00:00Z", "end": "2026-10-31T00:00:00Z" } } ] },
+        { "text": "That's your calendar for the rest of the week." }
+      ]
+    },
+    {
+      "match": "mail|email|inbox",
+      "steps": [
+        { "tools": [ { "name": "graph_mail", "args": { "search": "field test", "top": 5 } } ] },
+        { "text": "These are the recent messages about the field test." }
+      ]
+    },
+    {
+      "match": "who is|people|contact",
+      "steps": [
+        { "tools": [ { "name": "graph_people", "args": { "query": "Priya" } } ] },
+        { "text": "Here is who matched." }
+      ]
+    },
+    {
+      "match": "build",
+      "steps": [
+        { "tools": [ { "name": "query_program_data", "args": { "sql": "SELECT p.name, COUNT(*) AS builds, ROUND(100.0 * SUM(CASE WHEN b.status = 'failed' THEN 1 ELSE 0 END) / COUNT(*), 1) AS failure_pct FROM builds b JOIN programs p ON p.program_id = b.program_id GROUP BY p.name ORDER BY failure_pct DESC" } } ] },
+        { "text": "Build failure rates per program are in the table, worst first." }
+      ]
+    },
+    {
+      "match": "defect|severity|S1",
+      "steps": [
+        { "tools": [ { "name": "query_program_data", "args": { "sql": "SELECT p.name, COUNT(*) AS open_defects FROM defects d JOIN programs p ON p.program_id = d.program_id WHERE d.status <> 'closed' GROUP BY p.name ORDER BY open_defects DESC" } } ] },
+        { "text": "Open defects per program are in the table. Row-level security limits this to the programs you can see." }
+      ]
+    }
+  ]
+}

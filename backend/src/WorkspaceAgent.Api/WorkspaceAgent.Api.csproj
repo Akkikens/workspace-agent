@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\WorkspaceAgent.Core\WorkspaceAgent.Core.csproj" />
+    <ProjectReference Include="..\WorkspaceAgent.Anthropic\WorkspaceAgent.Anthropic.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="demo/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

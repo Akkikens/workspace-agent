@@ -1,0 +1,77 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: dotnet build WorkspaceAgent.slnx -c Release --nologo
+      - run: dotnet test WorkspaceAgent.slnx -c Release --no-build --nologo
+
+  nl2sql-eval:
+    # Replays the recorded model outputs through the real governor + SQLite executor. No model key.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - run: dotnet build src/WorkspaceAgent.Cli -c Release --nologo
+      - name: Eval gate (fails on any regression vs baseline or any governance leak)
+        run: >
+          dotnet run -c Release --no-build --project src/WorkspaceAgent.Cli --
+          eval --cases=evals/nl2sql/cases.json --cassette=evals/nl2sql/cassette.json
+          --baseline=evals/nl2sql/baseline.json --out=eval-out
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nl2sql-eval
+          path: backend/eval-out
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  extension:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: extension
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: extension/package-lock.json
+      - run: npm ci
+      - run: npm run compile
+      - run: npm run test:unit
+      - uses: actions/cache@v4
+        with:
+          path: extension/.vscode-test
+          key: vscode-test-${{ runner.os }}-stable
+      - name: Integration tests in a real VS Code extension host
+        run: xvfb-run -a npm run test:integration

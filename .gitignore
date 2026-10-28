@@ -1,0 +1,11 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+*.db
+TestResults/
+
+# Node (web/ and extension/ have their own .gitignore too)
+node_modules/
+.DS_Store
